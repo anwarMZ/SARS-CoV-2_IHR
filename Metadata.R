@@ -8,7 +8,7 @@ library(readxl)
 
 
 Metadata <-
-  read.csv(file = 'GISAID20210104/metadata.tsv', sep = '\t')
+  read.csv(file = 'metadata.tsv', sep = '\t')
 
 nrow(Metadata)
 
@@ -104,7 +104,7 @@ Top30countries_weekly <- Top30countries_weekly %>%
     count = n
   )
 Top30countries_weekly <- Top30countries_weekly[order(Top30countries_weekly$country, Top30countries_weekly$iso_week_no),]
-write.table(Top30countries_weekly, file='~/GitHub/GISAID_CIHR/GISAID20210104/Top30_weekly_counts.tsv', quote=FALSE, sep='\t', row.names = FALSE)
+write.table(Top30countries_weekly, file='Top30_weekly_counts.tsv', quote=FALSE, sep='\t', row.names = FALSE)
 
 
 
