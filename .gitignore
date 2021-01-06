@@ -4,6 +4,7 @@
 
 # Session Data files
 .RData
+.DS_store
 
 # User-specific files
 .Ruserdata
@@ -18,7 +19,7 @@
 /*.Rcheck/
 
 # RStudio files
-.Rproj.user/
+*.Rproj*
 
 # produced vignettes
 vignettes/*.html
@@ -37,3 +38,10 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+
+# figs
+figs/*
+
+# Metadata_files
+GISAID*
+
