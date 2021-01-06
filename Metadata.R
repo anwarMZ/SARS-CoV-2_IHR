@@ -132,8 +132,8 @@ for(div in division_interest){
               ylab("Divisions/States/Provinces") +
               xlab(paste("ISO Week Number", year)) +
               ggtitle(paste("SARS-CoV-2 Sampling distribution by ISO Week Number",year,"within",div)))
+      }
     }
-  }
     }
 
 
@@ -165,3 +165,28 @@ for(year in years){
   }
 
 
+for(reg in unique(Human_associated$region)){
+  region_weekly <- as.data.frame(Human_associated %>%
+                                     filter(region == reg, ignore.case = TRUE) %>%
+                                     #filter(!division == div, ignore.case = TRUE) %>%
+                                     group_by(region, country, iso_week_no, sample_year) %>% 
+                                     tally(sort = T)) 
+  
+  region_weekly <- region_weekly[order(region_weekly$iso_week_no),]
+  
+  for(year in years){
+    if (year %in% region_weekly$sample_year ){
+      print(ggplot(region_weekly %>% filter(sample_year == year), aes(x=iso_week_no, y=country, size = n, label=n)) +
+              geom_point(alpha=0.7, shape=21, stroke =2, color = "blue") +
+              geom_text(aes(label=n),hjust=0, vjust=2, show.legend = FALSE, size=03, color = 'black' )+
+              scale_size( range = c(1,10), name="Count per week") +
+              guides(size=guide_legend())+
+              scale_fill_viridis(discrete=TRUE, guide=FALSE, option="A")+
+              scale_x_continuous(breaks=seq(1, 54, 2))+
+              theme_ipsum()+
+              ylab("Countries") +
+              xlab(paste("ISO Week Number", year))+
+              ggtitle(paste("SARS-CoV-2 Sampling distribution by ISO Week Number",year,"within",reg)))
+    }
+  }
+  }
