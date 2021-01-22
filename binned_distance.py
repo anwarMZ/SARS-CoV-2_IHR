@@ -38,11 +38,12 @@ if __name__ == '__main__':
         avg_dist = sub_dist['distance'].mean()
         min_dist = sub_dist['distance'].min()
         max_dist = sub_dist['distance'].max()
-        bin_size = sub_dist['distance'].count()
+        bin_count = sub_dist['distance'].count()
         out_dates.append('{0} - {1}'.format(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d')))
         out_dist.append(avg_dist)
         out_min.append(min_dist)
         out_max.append(max_dist)
+        bin_size.append(bin_count)
 
         start_date += pd.DateOffset(days=args.window)
         end_date += pd.DateOffset(days=args.window)
