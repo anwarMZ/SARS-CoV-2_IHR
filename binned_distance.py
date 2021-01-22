@@ -10,6 +10,7 @@ if __name__ == '__main__':
     parser.add_argument('meta', metavar='METADATA', help='GISAID metadata')
     parser.add_argument('out', metavar='OUTPUT', help='Output file')
     parser.add_argument('-t', '--time', type=int, default=14, help='Number of days within a bin (default: 14)')
+    parser.add_argument('-w', '--window', type=int, default=1, help='Number of days between bins (default: 1)')
 
     args = parser.parse_args()
 
@@ -41,8 +42,8 @@ if __name__ == '__main__':
         out_min.append(min_dist)
         out_max.append(max_dist)
 
-        start_date += pd.DateOffset(days=1)
-        end_date += pd.DateOffset(days=1)
+        start_date += pd.DateOffset(days=args.window)
+        end_date += pd.DateOffset(days=args.window)
 
     out_df = pd.DataFrame({'date_range': out_dates, 'average_distance': out_dist, 'min_distance': out_min, 'max_distance': out_max})
     out_df.to_csv(args.out, sep='\t', index=False)
