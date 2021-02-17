@@ -5,6 +5,7 @@ import pandas as pd
 import subprocess
 import os
 import tempfile
+import statistics
 
 if __name__ == '__main__':
     parser = ap.ArgumentParser(description='Runs MASH for each time bin')
@@ -15,8 +16,9 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--time', type=int, default=14, help='Number of days within a bin (default: 14)')
     parser.add_argument('-w', '--window', type=int, default=1, help='Number of days between bins (default: 1)')
     parser.add_argument('-c', '--clean', action='store_true', help='Remove all temporary MASH files after execution')
-    parser.add_argument('-k', '--kmer', type=int, default=17, help='kmer size for MASH')
-    parser.add_argument('-p', '--threads', type=int, default=1, help='Number of threads to use for MASH')
+    parser.add_argument('-k', '--kmer', type=int, default=17, help='kmer size for MASH (default: 17)')
+    parser.add_argument('-p', '--threads', type=int, default=1, help='Number of threads to use for MASH (default: 1)')
+    parser.add_argument('--prefix', type=str, default='summary', help='Output file prefix (default: summary)')
 
     args = parser.parse_args()
 
@@ -78,7 +80,7 @@ if __name__ == '__main__':
                     break
                 distances.append(dist_mat.loc[i, j])
 
-        avg_dist = mean(distances)
+        avg_dist = statistics.mean(distances)
         min_dist = min(distances)
         max_dist = max(distances)
         bin_count = len(distances)
@@ -92,7 +94,7 @@ if __name__ == '__main__':
         end_date += pd.DateOffset(days=args.window)
 
     out_df = pd.DataFrame({'date_range': out_dates, 'average_distance': out_dist, 'min_distance': out_min, 'max_distance': out_max, 'sample_size': bin_size})
-    out_df.to_csv(args.out, sep='\t', index=False)
+    out_df.to_csv(os.path.join(args.outdir, '{0}.tsv'.format(args.prefix)), sep='\t', index=False)
 
     if args.clean and tmpdir_obj is not None:
         tmpdir_obj.cleanup()
