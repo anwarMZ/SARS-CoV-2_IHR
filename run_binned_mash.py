@@ -65,16 +65,23 @@ if __name__ == '__main__':
         subprocess.run(['mash sketch -k {0} -p {1} -o {2}.msh -i {3}.fasta'.format(args.kmer, args.threads, prefix, prefix)], shell=True)
 
         # Run MASH distance calculation
-        subprocess.run(['mash dist {0}.msh {1}.msh >> {2}.dist'.format(prefix, prefix, prefix)], shell=True)
+        subprocess.run(['mash dist -t {0}.msh {1}.msh >> {2}.dist'.format(prefix, prefix, prefix)], shell=True)
 
         # Load distance matrix
         dist_mat = pd.read_csv('{0}.dist'.format(prefix), sep='\t', index_col=0, header=0)
-        dist_mat.columns = ['strain', 'distance']
+        distances = []
 
-        avg_dist = dist_mat['distance'].mean()
-        min_dist = dist_mat['distance'].min()
-        max_dist = dist_mat['distance'].max()
-        bin_count = dist_mat['distance'].count()
+        # Parse distance matrix (might be a better way to do this)
+        for i in ids:
+            for j in ids:
+                if i == j:
+                    break
+                distances.append(dist_mat.loc[i, j])
+
+        avg_dist = mean(distances)
+        min_dist = min(distances)
+        max_dist = max(distances)
+        bin_count = len(distances)
         out_dates.append('{0} - {1}'.format(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d')))
         out_dist.append(avg_dist)
         out_min.append(min_dist)
