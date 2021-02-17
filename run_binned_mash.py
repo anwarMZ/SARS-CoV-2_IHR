@@ -55,20 +55,20 @@ if __name__ == '__main__':
         sub_meta = metadata.query('date >= @start_date and date <= @end_date')
         ids = sub_meta['strain']
 
-        prefix = '{2}/{3}_{4}'.format(tmpdir, start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
+        prefix = '{0}/{1}_{2}'.format(tmpdir, start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
 
         # Create fasta file of isolates within time bin
         for strain in ids:
-            subprocess.run(['grep -A1 {0} {1} >> {2}.fasta'.format(strain, args.fasta, prefix)])
+            subprocess.run(['grep -A1 {0} {1} >> {2}.fasta'.format(strain, args.fasta, prefix)], shell=True)
 
         # Create sketch 
-        subprocess.run(['mash sketch -k {0} -p {1} -o {3}.msh -i {4}.fasta'.format(args.kmer, args.threads, prefix, prefix)])
+        subprocess.run(['mash sketch -k {0} -p {1} -o {2}.msh -i {3}.fasta'.format(args.kmer, args.threads, prefix, prefix)], shell=True)
 
         # Run MASH distance calculation
-        subprocess.run(['mash dist -t {0}.msh >> {1}.dist'.format(prefix, prefix)])
+        subprocess.run(['mash dist {0}.msh {1}.msh >> {2}.dist'.format(prefix, prefix, prefix)], shell=True)
 
         # Load distance matrix
-        dist_mat = pd.read_csv('{0}.dist'.format(prefix), sep='\t')
+        dist_mat = pd.read_csv('{0}.dist'.format(prefix), sep='\t', index_col=0, header=0)
         dist_mat.columns = ['strain', 'distance']
 
         avg_dist = dist_mat['distance'].mean()
