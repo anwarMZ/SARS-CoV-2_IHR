@@ -118,10 +118,12 @@ if __name__ == '__main__':
                         break
                     distances.append(dist_mat.loc[i, j])
 
+            print("{0} isolates, {1} comparisons".format(len(ids), len(distances)))
+
             avg_dist = statistics.mean(distances)
             min_dist = min(distances)
             max_dist = max(distances)
-            bin_count = len(distances)
+            bin_count = len(ids)
             out_dates.append('{0} - {1}'.format(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d')))
             out_dist.append(avg_dist)
             out_min.append(min_dist)
@@ -132,7 +134,7 @@ if __name__ == '__main__':
             end_date += pd.DateOffset(days=args.window)
 
     out_df = pd.DataFrame({'date_range': out_dates, 'average_distance': out_dist, 'min_distance': out_min, 'max_distance': out_max, 'sample_size': bin_size})
-    out_df.to_csv(args.out, sep='\t', index=False)
+    out_df.to_csv(os.path.join(args.outdir, '{0}.tsv'.format(args.prefix)), sep='\t', index=False)
 
     if args.clean and tmpdir_obj is not None:
         tmpdir_obj.cleanup()
