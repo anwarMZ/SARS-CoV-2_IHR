@@ -73,12 +73,12 @@ if __name__ == '__main__':
 
     # Create sketch 
     logger.info('Run MASH to obtain distance against reference')
-    subprocess.run(['mash sketch -k {0} -p {1} -o {2}.msh -i {3}'.format(args.kmer, args.threads, prefix, args.fasta)], shell=True, stdout=subprocess.DEVNULL)
+    subprocess.run(['mash sketch -k {0} -p {1} -o {2}.msh -i {3}'.format(args.kmer, args.threads, prefix, args.fasta)], shell=True, stderr=subprocess.DEVNULL)
 
     # Run MASH distance calculation
-    subprocess.run(['mash dist -t {0}.msh {1} >> {2}.dist'.format(prefix, args.ref, prefix)], shell=True, stdout=subprocess.DEVNULL)
+    subprocess.run(['mash dist -k {0} -t {1} {2}.msh >> {3}.dist'.format(args.kmer, args.ref, prefix, prefix)], shell=True, stderr=subprocess.DEVNULL)
 
-    ref_dist_mat = pd.read_csv('{0}.dist'.format(prefix), sep='\t', index_col=0, header=0)
+    ref_dist_mat = pd.read_csv('{0}.dist'.format(prefix), sep='\t', index_col=None, header=0, comment='#')
     ref_dist_mat.columns = ['strain', 'distance']
 
     logger.info('Going through each time bin to run pairwise MASH and aggregate results')
@@ -93,10 +93,10 @@ if __name__ == '__main__':
             subprocess.run(['grep -A1 {0} {1} >> {2}.fasta'.format(strain, args.fasta, prefix)], shell=True)
 
         # Create sketch 
-        subprocess.run(['mash sketch -k {0} -p {1} -o {2}.msh -i {3}.fasta'.format(args.kmer, args.threads, prefix, prefix)], shell=True, stdout=subprocess.DEVNULL)
+        subprocess.run(['mash sketch -k {0} -p {1} -o {2}.msh -i {3}.fasta'.format(args.kmer, args.threads, prefix, prefix)], shell=True, stderr=subprocess.DEVNULL)
 
         # Run MASH distance calculation
-        subprocess.run(['mash dist -t {0}.msh {1}.msh >> {2}.dist'.format(prefix, prefix, prefix)], shell=True, stdout=subprocess.DEVNULL)
+        subprocess.run(['mash dist -t {0}.msh {1}.msh >> {2}.dist'.format(prefix, prefix, prefix)], shell=True, stderr=subprocess.DEVNULL)
 
         # Load distance matrix
         pair_dist_mat = pd.read_csv('{0}.dist'.format(prefix), sep='\t', index_col=0, header=0)
@@ -111,7 +111,7 @@ if __name__ == '__main__':
 
         logger.info("Current bin has {0} isolates, {1} pairwise comparisons".format(len(ids), len(pair_distances)))
 
-        sub_ref_dist = ref_dist_mat[dist_mat['strain'].isin(ids)]
+        sub_ref_dist = ref_dist_mat[ref_dist_mat['strain'].isin(ids)]
         out_ref_dist.append(sub_ref_dist['distance'].mean())
         out_ref_max.append(sub_ref_dist['distance'].max())
         out_ref_min.append(sub_ref_dist['distance'].min())
