@@ -164,7 +164,7 @@ if __name__ == '__main__':
         for i in warning_bins['0']:
             print(i)
 
-    if len(warning_bins['1'] > 0):
+    if len(warning_bins['1']) > 0:
         logger.warning('The following time bins have only 1 sequence:')
         for i in warning_bins['1']:
             print(i)
