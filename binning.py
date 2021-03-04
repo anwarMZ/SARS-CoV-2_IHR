@@ -7,6 +7,7 @@ import os
 import tempfile
 import statistics
 import logging
+import numpy as np
 
 
 if __name__ == '__main__':
@@ -69,6 +70,11 @@ if __name__ == '__main__':
     out_pair_max = []
     bin_size = []
 
+    warning_bins = {
+        '0': [],
+        '1': []
+    }
+
     prefix = os.path.join(tmpdir, args.prefix)
 
     # Create sketch 
@@ -86,45 +92,82 @@ if __name__ == '__main__':
         sub_meta = metadata.query('date >= @start_date and date <= @end_date')
         ids = sub_meta['strain']
 
-        prefix = '{0}/{1}_{2}'.format(tmpdir, start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
+        if len(ids) == 0:
+            out_ref_dist.append(np.nan)
+            out_ref_max.append(np.nan)
+            out_ref_min.append(np.nan)
 
-        # Create fasta file of isolates within time bin
-        for strain in ids:
-            subprocess.run(['grep -A1 {0} {1} >> {2}.fasta'.format(strain, args.fasta, prefix)], shell=True)
+            out_dates.append('{0} - {1}'.format(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d')))
+            out_pair_dist.append(np.nan)
+            out_pair_min.append(np.nan)
+            out_pair_max.append(np.nan)
+            bin_size.append(0)
 
-        # Create sketch 
-        subprocess.run(['mash sketch -k {0} -p {1} -o {2}.msh -i {3}.fasta'.format(args.kmer, args.threads, prefix, prefix)], shell=True, stderr=subprocess.DEVNULL)
+            warning_bins['0'].append('{0} - {1}'.format(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d')))
 
-        # Run MASH distance calculation
-        subprocess.run(['mash dist -t {0}.msh {1}.msh >> {2}.dist'.format(prefix, prefix, prefix)], shell=True, stderr=subprocess.DEVNULL)
+        elif len(ids) == 1:
+            out_ref_dist.append(0)
+            out_ref_max.append(0)
+            out_ref_min.append(0)
 
-        # Load distance matrix
-        pair_dist_mat = pd.read_csv('{0}.dist'.format(prefix), sep='\t', index_col=0, header=0)
-        pair_distances = []
+            out_dates.append('{0} - {1}'.format(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d')))
+            out_pair_dist.append(0)
+            out_pair_min.append(0)
+            out_pair_max.append(0)
+            bin_size.append(1)
 
-        # Parse distance matrix (might be a better way to do this)
-        for i in ids:
-            for j in ids:
-                if i == j:
-                    break
-                pair_distances.append(pair_dist_mat.loc[i, j])
+            warning_bins['1'].append('{0} - {1}'.format(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d')))
 
-        logger.info("Current bin has {0} isolates, {1} pairwise comparisons".format(len(ids), len(pair_distances)))
+        else:
+            prefix = '{0}/{1}_{2}'.format(tmpdir, start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
 
-        sub_ref_dist = ref_dist_mat[ref_dist_mat['strain'].isin(ids)]
-        out_ref_dist.append(sub_ref_dist['distance'].mean())
-        out_ref_max.append(sub_ref_dist['distance'].max())
-        out_ref_min.append(sub_ref_dist['distance'].min())
+            # Create fasta file of isolates within time bin
+            for strain in ids:
+                subprocess.run(['grep -A1 {0} {1} >> {2}.fasta'.format(strain, args.fasta, prefix)], shell=True)
 
-        bin_count = len(ids)
-        out_dates.append('{0} - {1}'.format(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d')))
-        out_pair_dist.append(statistics.mean(pair_distances))
-        out_pair_min.append(min(pair_distances))
-        out_pair_max.append(max(pair_distances))
-        bin_size.append(bin_count)
+            # Create sketch 
+            subprocess.run(['mash sketch -k {0} -p {1} -o {2}.msh -i {3}.fasta'.format(args.kmer, args.threads, prefix, prefix)], shell=True, stderr=subprocess.DEVNULL)
+
+            # Run MASH distance calculation
+            subprocess.run(['mash dist -t {0}.msh {1}.msh >> {2}.dist'.format(prefix, prefix, prefix)], shell=True, stderr=subprocess.DEVNULL)
+
+            # Load distance matrix
+            pair_dist_mat = pd.read_csv('{0}.dist'.format(prefix), sep='\t', index_col=0, header=0)
+            pair_distances = []
+
+            # Parse distance matrix (might be a better way to do this)
+            for i in ids:
+                for j in ids:
+                    if i == j:
+                        break
+                    pair_distances.append(pair_dist_mat.loc[i, j])
+
+            logger.info("Current bin has {0} isolates, {1} pairwise comparisons".format(len(ids), len(pair_distances)))
+
+            sub_ref_dist = ref_dist_mat[ref_dist_mat['strain'].isin(ids)]
+            out_ref_dist.append(sub_ref_dist['distance'].mean())
+            out_ref_max.append(sub_ref_dist['distance'].max())
+            out_ref_min.append(sub_ref_dist['distance'].min())
+
+            bin_count = len(ids)
+            out_dates.append('{0} - {1}'.format(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d')))
+            out_pair_dist.append(statistics.mean(pair_distances))
+            out_pair_min.append(min(pair_distances))
+            out_pair_max.append(max(pair_distances))
+            bin_size.append(bin_count)
 
         start_date += pd.DateOffset(days=args.window)
         end_date += pd.DateOffset(days=args.window)
+
+    if len(warning_bins['0']) > 0:
+        logger.warning('The following time bins have 0 sequences:')
+        for i in warning_bins['0']:
+            print(i)
+
+    if len(warning_bins['1'] > 0):
+        logger.warning('The following time bins have only 1 sequence:')
+        for i in warning_bins['1']:
+            print(i)
 
     out_df = pd.DataFrame({'date_range': out_dates, 
                            'average_ref_distance': out_ref_dist, 
