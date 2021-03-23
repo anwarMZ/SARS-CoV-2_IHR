@@ -82,12 +82,15 @@ if __name__ == '__main__':
     end_date = start_date + pd.DateOffset(days=args.time)
 
     out_dates = []
-    out_ref_dist = []
+    out_ref_dist_mean = []
     out_ref_min = []
     out_ref_max = []
-    out_pair_dist = []
+    out_pair_dist_mean = []
     out_pair_min = []
     out_pair_max = []
+    out_pair_dist_median = []
+    out_pair_dist_Q1 = []
+    out_pair_dist_Q3 = []
     bin_size = []
 
     warning_bins = {
@@ -123,14 +126,17 @@ if __name__ == '__main__':
         ids = sub_meta['strain']
 
         if len(ids) == 0:
-            out_ref_dist.append(np.nan)
+            out_ref_dist_mean.append(np.nan)
             out_ref_max.append(np.nan)
             out_ref_min.append(np.nan)
 
             out_dates.append(
                 '{0} - {1}'.format(start_date.strftime('%Y-%m-%d'),
                                    end_date.strftime('%Y-%m-%d')))
-            out_pair_dist.append(np.nan)
+            out_pair_dist_mean.append(np.nan)
+            out_pair_dist_median.append(np.nan)
+            out_pair_dist_Q1.append(np.nan)
+            out_pair_dist_Q3.append(np.nan)
             out_pair_min.append(np.nan)
             out_pair_max.append(np.nan)
             bin_size.append(0)
@@ -140,14 +146,17 @@ if __name__ == '__main__':
                                    end_date.strftime('%Y-%m-%d')))
 
         elif len(ids) == 1:
-            out_ref_dist.append(0)
+            out_ref_dist_mean.append(0)
             out_ref_max.append(0)
             out_ref_min.append(0)
 
             out_dates.append(
                 '{0} - {1}'.format(start_date.strftime('%Y-%m-%d'),
                                    end_date.strftime('%Y-%m-%d')))
-            out_pair_dist.append(0)
+            out_pair_dist_mean.append(0)
+            out_pair_dist_median.append(0)
+            out_pair_dist_Q1.append(0)
+            out_pair_dist_Q3.append(0)
             out_pair_min.append(0)
             out_pair_max.append(0)
             bin_size.append(1)
@@ -196,18 +205,24 @@ if __name__ == '__main__':
 
             sub_ref_dist = ref_dist_mat[
                 ref_dist_mat['strain'].isin(ids)]
-            out_ref_dist.append(sub_ref_dist['distance'].mean())
-            #out_ref_max.append(sub_ref_dist['distance'].max())
-            #out_ref_min.append(sub_ref_dist['distance'].min())
+            out_ref_dist_mean.append(sub_ref_dist['distance'].mean())
+            out_ref_max.append(sub_ref_dist['distance'].max())
+            out_ref_min.append(sub_ref_dist['distance'].min())
 
             bin_count = len(ids)
-            #out_dates.append(
+            # out_dates.append(
             #    '{0} - {1}'.format(start_date.strftime('%Y-%m-%d'),
             #                       end_date.strftime('%Y-%m-%d')))
-            out_dates=end_date.strftime('%Y-%m-%d')
-            out_pair_dist.append(statistics.mean(pair_distances))
-            #out_pair_min.append(min(pair_distances))
-            #out_pair_max.append(max(pair_distances))
+            out_dates = end_date.strftime('%Y-%m-%d')
+            out_pair_dist_mean.append(statistics.mean(pair_distances))
+            out_pair_min.append(min(pair_distances))
+            out_pair_max.append(max(pair_distances))
+            out_pair_dist_median.append(np.percentile(pair_distances,
+                                                      50))
+            out_pair_dist_Q1.append(np.percentile(pair_distances,
+                                                  25))
+            out_pair_dist_Q3.append(np.percentile(pair_distances,
+                                                  75))
             bin_size.append(bin_count)
 
         start_date += pd.DateOffset(days=args.window)
@@ -224,12 +239,15 @@ if __name__ == '__main__':
             print(i)
 
     out_df = pd.DataFrame({'date': out_dates,
-                           'average_ref_distance': out_ref_dist,
-                           #'min_ref_distance': out_ref_min,
-                           #'max_ref_distance': out_ref_max,
-                           'average_pair_distance': out_pair_dist,
-                           #'min_pair_distance': out_pair_min,
-                           #'max_pair_distance': out_pair_max,
+                           'average_ref_distance': out_ref_dist_mean,
+                           'min_ref_distance': out_ref_min,
+                           'max_ref_distance': out_ref_max,
+                           'average_pair_distance': out_pair_dist_mean,
+                           'min_pair_distance': out_pair_min,
+                           'max_pair_distance': out_pair_max,
+                           'median_pair_distance': out_pair_dist_median,
+                           'Q1_pair_distance': out_pair_dist_Q1,
+                           'Q3_pair_distance': out_pair_dist_Q3,
                            'sample_size': bin_size})
     out_df.to_csv(
         os.path.join(args.outdir, '{0}.tsv'.format(args.prefix)),
