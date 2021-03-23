@@ -73,7 +73,7 @@ if __name__ == '__main__':
 
     # Read and preprocess metadata file
     logger.info('Reading and preprocessing metadata file')
-    metadata = pd.read_csv(args.meta, sep='\t')
+    metadata = pd.read_csv(args.meta, sep='\t', header=0)
     metadata['date'] = pd.to_datetime(metadata['date'])
     metadata = metadata.sort_values('date')
     metadata = metadata.reset_index()
@@ -130,9 +130,10 @@ if __name__ == '__main__':
             out_ref_max.append(np.nan)
             out_ref_min.append(np.nan)
 
-            out_dates.append(
-                '{0} - {1}'.format(start_date.strftime('%Y-%m-%d'),
-                                   end_date.strftime('%Y-%m-%d')))
+            #out_dates.append(
+            #    '{0} - {1}'.format(start_date.strftime('%Y-%m-%d'),
+            #                       end_date.strftime('%Y-%m-%d')))
+            out_dates.append(format(end_date.strftime('%Y-%m-%d')))
             out_pair_dist_mean.append(np.nan)
             out_pair_dist_median.append(np.nan)
             out_pair_dist_Q1.append(np.nan)
@@ -141,18 +142,21 @@ if __name__ == '__main__':
             out_pair_max.append(np.nan)
             bin_size.append(0)
 
-            warning_bins['0'].append(
-                '{0} - {1}'.format(start_date.strftime('%Y-%m-%d'),
-                                   end_date.strftime('%Y-%m-%d')))
+            #warning_bins['0'].append(
+            #    '{0} - {1}'.format(start_date.strftime('%Y-%m-%d'),
+            #                       end_date.strftime('%Y-%m-%d')))
+            warning_bins['0'].append(format(end_date.strftime(
+                '%Y-%m-%d')))
 
         elif len(ids) == 1:
             out_ref_dist_mean.append(0)
             out_ref_max.append(0)
             out_ref_min.append(0)
 
-            out_dates.append(
-                '{0} - {1}'.format(start_date.strftime('%Y-%m-%d'),
-                                   end_date.strftime('%Y-%m-%d')))
+            # out_dates.append(
+            #    '{0} - {1}'.format(start_date.strftime('%Y-%m-%d'),
+            #                       end_date.strftime('%Y-%m-%d')))
+            out_dates.append(format(end_date.strftime('%Y-%m-%d')))
             out_pair_dist_mean.append(0)
             out_pair_dist_median.append(0)
             out_pair_dist_Q1.append(0)
@@ -161,9 +165,11 @@ if __name__ == '__main__':
             out_pair_max.append(0)
             bin_size.append(1)
 
-            warning_bins['1'].append(
-                '{0} - {1}'.format(start_date.strftime('%Y-%m-%d'),
-                                   end_date.strftime('%Y-%m-%d')))
+            #warning_bins['1'].append(
+            #    '{0} - {1}'.format(start_date.strftime('%Y-%m-%d'),
+            #                       end_date.strftime('%Y-%m-%d')))
+            warning_bins['0'].append(format(end_date.strftime(
+                '%Y-%m-%d')))
 
         else:
             prefix = '{0}/{1}_{2}'.format(tmpdir, start_date.strftime(
@@ -213,7 +219,7 @@ if __name__ == '__main__':
             # out_dates.append(
             #    '{0} - {1}'.format(start_date.strftime('%Y-%m-%d'),
             #                       end_date.strftime('%Y-%m-%d')))
-            out_dates = end_date.strftime('%Y-%m-%d')
+            out_dates.append(format(end_date.strftime('%Y-%m-%d')))
             out_pair_dist_mean.append(statistics.mean(pair_distances))
             out_pair_min.append(min(pair_distances))
             out_pair_max.append(max(pair_distances))
