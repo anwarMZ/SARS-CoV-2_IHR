@@ -100,19 +100,21 @@ if __name__ == '__main__':
 
     prefix = os.path.join(tmpdir, args.prefix)
 
-    # Create sketch 
-    logger.info('Run MASH to obtain distance against reference')
-    subprocess.run(['mash sketch -k {0} -p {1} -o {2}.msh -i {'
-                    '3}'.format(args.kmer, args.threads, prefix,
-                                args.fasta)], shell=True,
-                   stderr=subprocess.DEVNULL)
+    if not os.path.exists('{0}.dist'.format(prefix)):
+        # Create sketch 
+        logger.info('Run MASH to obtain distance against reference')
+        subprocess.run(['mash sketch -k {0} -p {1} -o {2}.msh -i {'
+                        '3}'.format(args.kmer, args.threads, prefix,
+                                    args.fasta)], shell=True,
+                    stderr=subprocess.DEVNULL)
 
-    # Run MASH distance calculation
-    subprocess.run(['mash dist -k {0} -t {1} {2}.msh >> {'
-                    '3}.dist'.format(args.kmer, args.ref, prefix,
-                                     prefix)], shell=True,
-                   stderr=subprocess.DEVNULL)
+        # Run MASH distance calculation
+        subprocess.run(['mash dist -k {0} -t {1} {2}.msh >> {'
+                        '3}.dist'.format(args.kmer, args.ref, prefix,
+                                        prefix)], shell=True,
+                    stderr=subprocess.DEVNULL)
 
+    logger.info('Loading distance matrix against reference')
     ref_dist_mat = pd.read_csv('{0}.dist'.format(prefix), sep='\t',
                                index_col=None, header=0, comment='#')
     ref_dist_mat.columns = ['strain', 'distance']
@@ -172,9 +174,10 @@ if __name__ == '__main__':
                 '%Y-%m-%d')))
 
         else:
+            prefix = '{0}/{1}_{2}'.format(tmpdir, start_date.strftime(
+                '%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
+
             if not os.path.exists('{0}.dist'.format(prefix)):
-                prefix = '{0}/{1}_{2}'.format(tmpdir, start_date.strftime(
-                    '%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
 
                 # Create fasta file of isolates within time bin
                 for strain in ids:
