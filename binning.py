@@ -115,6 +115,7 @@ if __name__ == '__main__':
                     stderr=subprocess.DEVNULL)
 
     logger.info('Loading distance matrix against reference')
+
     ref_dist_mat = pd.read_csv('{0}.dist'.format(prefix), sep='\t',
                                index_col=None, header=0, comment='#')
     ref_dist_mat.columns = ['strain', 'distance']
@@ -224,7 +225,7 @@ if __name__ == '__main__':
             #    '{0} - {1}'.format(start_date.strftime('%Y-%m-%d'),
             #                       end_date.strftime('%Y-%m-%d')))
             out_dates.append(format(end_date.strftime('%Y-%m-%d')))
-            out_pair_dist_mean.append(statistics.mean(pair_distances))
+            out_pair_dist_mean.append(np.mean(pair_distances))
             out_pair_min.append(min(pair_distances))
             out_pair_max.append(max(pair_distances))
             out_pair_dist_median.append(np.percentile(pair_distances,
