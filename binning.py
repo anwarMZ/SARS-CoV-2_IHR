@@ -103,14 +103,14 @@ if __name__ == '__main__':
     if not os.path.exists('{0}.dist'.format(prefix)):
         # Create sketch 
         logger.info('Run MASH to obtain distance against reference')
-        subprocess.run(['mash sketch -s 5000-k {0} -p {1} -o {2}.msh -i {'
+        subprocess.run(['mash sketch -s 5000 -k {0} -p {1} -o {2}.msh -i {'
                         '3}'.format(args.kmer, args.threads, prefix,
                                     args.ref)], shell=True,
                     stderr=subprocess.DEVNULL)
 
         # Run MASH distance calculation
-        subprocess.run(['mash dist -s 5000 -k {0} -t {1}.msh {2} >> {'
-                        '3}.dist'.format(args.kmer, prefix, args.fasta
+        subprocess.run(['mash dist -s 5000 -t {0}.msh {1} >> {'
+                        '2}.dist'.format(prefix, args.fasta,
                                         prefix)], shell=True,
                     stderr=subprocess.DEVNULL)
 
