@@ -104,8 +104,9 @@ if __name__ == '__main__':
     logger.info('Run MASH to obtain distance against reference')
     subprocess.run(['mash sketch -k {0} -p {1} -o {2}.msh -i {'
                     '3}'.format(args.kmer, args.threads, prefix,
-                                args.fasta)], shell=True,
+                               args.fasta)], shell=True,
                    stderr=subprocess.DEVNULL)
+    #subprocess.run(['mash sketch -g 29903 -o {0}.msh -i {1}'.format(prefix, args.fasta)], shell=True, stderr=subprocess.DEVNULL)
 
     # Run MASH distance calculation
     subprocess.run(['mash dist -k {0} -t {1} {2}.msh >> {'
@@ -220,7 +221,7 @@ if __name__ == '__main__':
             #    '{0} - {1}'.format(start_date.strftime('%Y-%m-%d'),
             #                       end_date.strftime('%Y-%m-%d')))
             out_dates.append(format(end_date.strftime('%Y-%m-%d')))
-            out_pair_dist_mean.append(statistics.mean(pair_distances))
+            out_pair_dist_mean.append(np.mean(pair_distances))
             out_pair_min.append(min(pair_distances))
             out_pair_max.append(max(pair_distances))
             out_pair_dist_median.append(np.percentile(pair_distances,
