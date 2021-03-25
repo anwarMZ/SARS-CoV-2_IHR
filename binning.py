@@ -26,8 +26,8 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--clean', action='store_true',
                         help='Remove all temporary MASH files after '
                              'execution')
-    parser.add_argument('-k', '--kmer', type=int, default=17,
-                        help='kmer size for MASH (default: 17)')
+    # parser.add_argument('-k', '--kmer', type=int, default=17,
+    #                     help='kmer size for MASH (default: 17)')
     parser.add_argument('-p', '--threads', type=int, default=1,
                         help='Number of threads to use for MASH ('
                              'default: 1)')
@@ -103,20 +103,20 @@ if __name__ == '__main__':
     if not os.path.exists('{0}.dist'.format(prefix)):
         # Create sketch 
         logger.info('Run MASH to obtain distance against reference')
-        subprocess.run(['mash sketch -k {0} -p {1} -o {2}.msh -i {'
-                        '3}'.format(args.kmer, args.threads, prefix,
-                                    args.fasta)], shell=True,
+        subprocess.run(['mash sketch -g 29903 -p {0} -o {1}.msh '
+                        '{2}'.format(args.threads, prefix,
+                                     args.ref)], shell=True,
                     stderr=subprocess.DEVNULL)
 
         # Run MASH distance calculation
-        subprocess.run(['mash dist -k {0} -t {1} {2}.msh >> {'
-                        '3}.dist'.format(args.kmer, args.ref, prefix,
-                                        prefix)], shell=True,
+        subprocess.run(['mash dist -g 29903 -t {0}.msh {1} >> '
+                        '{2}.dist'.format(prefix, args.fasta
+                                          prefix)], shell=True,
                     stderr=subprocess.DEVNULL)
 
     logger.info('Loading distance matrix against reference')
     ref_dist_mat = pd.read_csv('{0}.dist'.format(prefix), sep='\t',
-                               index_col=None, header=0, comment='#')
+                               index_col=None, header=0, comment='#').transpose()
     ref_dist_mat.columns = ['strain', 'distance']
 
     logger.info(
@@ -185,16 +185,15 @@ if __name__ == '__main__':
                         strain, args.fasta, prefix)], shell=True)
 
                 # Create sketch 
-                subprocess.run(['mash sketch -k {0} -p {1} -o {2}.msh -i '
-                                '{3}.fasta'.format(args.kmer,
-                                                args.threads, prefix,
-                                                prefix)], shell=True,
+                subprocess.run(['mash sketch -g 29000 -p {0} -o {1}.msh -i '
+                                '{2}.fasta'.format(args.threads, prefix,
+                                                   prefix)], shell=True,
                             stderr=subprocess.DEVNULL)
 
                 # Run MASH distance calculation
-                subprocess.run(['mash dist -t {0}.msh {1}.msh >> {'
-                                '2}.dist'.format(prefix, prefix,
-                                                prefix)], shell=True,
+                subprocess.run(['mash dist -t {0}.msh {1}.msh >> '
+                                '{2}.dist'.format(prefix, prefix,
+                                                  prefix)], shell=True,
                             stderr=subprocess.DEVNULL)
 
             # Load distance matrix
